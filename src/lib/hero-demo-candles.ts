@@ -61,7 +61,7 @@ export const buildHeroDemoCandles = (): Candle[] => {
 
   for (let i = 0; i < 14; i++) {
     const open = mcap;
-    mcap -= (ath - 24_000) / (14 - i || 1) * 0.75;
+    mcap = Math.max(22_000, mcap - ((ath - 22_000) / 14) * 0.7);
     pushCandle(candles, start + t++ * 60, open, mcap, 2_600);
   }
 
@@ -70,13 +70,23 @@ export const buildHeroDemoCandles = (): Candle[] => {
 
 export const getHeroChartSlices = () => {
   const candles = buildHeroDemoCandles();
-  const freezeIndex = candles.length - 15;
-  const freezeTimestamp = candles[freezeIndex].time;
+
+  let athIndex = 0;
+  let athHigh = 0;
+  for (let i = 0; i < candles.length; i++) {
+    if (candles[i].high > athHigh) {
+      athHigh = candles[i].high;
+      athIndex = i;
+    }
+  }
+
+  const freezeIdx = Math.max(0, athIndex - 1);
+  const freezeTimestamp = candles[freezeIdx].time;
 
   return {
-    freezeIndex,
+    freezeIndex: freezeIdx,
     freezeTimestamp,
-    visible: candles.slice(0, freezeIndex + 1),
-    hidden: candles.slice(freezeIndex + 1),
+    visible: candles.slice(0, freezeIdx + 1),
+    hidden: candles.slice(freezeIdx + 1),
   };
 };
