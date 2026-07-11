@@ -9,10 +9,11 @@ datasource db {
 }
 
 model Deck {
-  id        String   @id @default(cuid())
-  deckDate  String   @unique
-  createdAt DateTime @default(now())
+  id        String     @id @default(cuid())
+  deckDate  String     @unique
+  createdAt DateTime   @default(now())
   cards     Card[]
+  dailyRuns DailyRun[]
 }
 
 model Card {
@@ -49,4 +50,20 @@ model Guess {
 
   @@index([sessionId])
   @@index([cardId, sessionId])
+}
+
+model DailyRun {
+  id          String   @id @default(cuid())
+  deckId      String
+  deck        Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  deckDate    String
+  sessionId   String
+  displayName String   @default("Anon")
+  correct     Int
+  total       Int
+  completedAt DateTime @default(now())
+
+  @@unique([deckId, sessionId])
+  @@index([deckDate, correct])
+  @@index([sessionId])
 }

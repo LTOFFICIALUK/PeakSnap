@@ -13,6 +13,7 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "npx tsx prisma/seed.ts",
     "deck:live": "npx tsx scripts/build-live-deck.ts",
+    "prod:ship": "bash scripts/prod-ship.sh",
     "deck:test": "npx tsx scripts/test-launches.ts",
     "db:studio": "prisma studio"
   },
