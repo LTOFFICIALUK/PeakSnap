@@ -10,59 +10,66 @@ const pushCandle = (
   candles.push({
     time,
     open,
-    high: Math.max(open, close) * 1.004,
-    low: Math.min(open, close) * 0.996,
+    high: Math.max(open, close) * 1.0035,
+    low: Math.min(open, close) * 0.9965,
     close,
     volume,
   });
 };
 
-/** Deterministic marketing chart — mature chop → pump → freeze → dump */
+/** Bull-flag style demo — flat chop, tight flag, modest push (matches drill cards) */
 export const buildHeroDemoCandles = (): Candle[] => {
   const candles: Candle[] = [];
-  const start = 1_731_000_000;
-  const floor = 28_000;
-  const ath = 52_000;
+  const start = 1_731_100_000;
+  const base = 30_000;
+  const peak = 42_500;
   let t = 0;
-  let mcap = floor * 0.82;
+  let mcap = 26_500;
 
-  for (let i = 0; i < 8; i++) {
-    const open = mcap;
-    mcap = i < 4 ? floor * (1.06 + i * 0.01) : floor * (0.94 - i * 0.005);
-    pushCandle(candles, start + t++ * 60, open, mcap, 2_800);
-  }
-
-  for (let i = 0; i < 40; i++) {
-    const open = mcap;
-    const wave = Math.sin(i / 5) * 0.05 + Math.sin(i / 12) * 0.028;
-    mcap = floor * (1 + wave - i * 0.0018);
-    pushCandle(candles, start + t++ * 60, open, mcap, 1_400);
-  }
-
-  const coilFloor = mcap;
+  // Early session pop then fade
   for (let i = 0; i < 10; i++) {
     const open = mcap;
-    mcap = coilFloor * (1 + Math.sin(i / 2) * 0.012);
-    pushCandle(candles, start + t++ * 60, open, mcap, 1_100);
+    mcap = i < 5 ? 27_800 + i * 420 : 31_500 - (i - 5) * 380;
+    pushCandle(candles, start + t++ * 60, open, mcap, 2_200);
   }
 
-  const pumpStart = mcap;
-  for (let i = 0; i < 18; i++) {
+  // Long sideways chop — the bulk of the chart
+  for (let i = 0; i < 48; i++) {
     const open = mcap;
-    mcap += (ath - pumpStart) / (18 - i || 1) * 0.82;
-    pushCandle(candles, start + t++ * 60, open, mcap, 3_200);
+    const wave =
+      Math.sin(i / 4.5) * 0.038 +
+      Math.sin(i / 11) * 0.022 +
+      Math.sin(i / 19) * 0.014;
+    mcap = base * (0.92 + wave);
+    pushCandle(candles, start + t++ * 60, open, mcap, 1_100 + (i % 3) * 120);
   }
 
-  for (let i = 0; i < 4; i++) {
+  // Tight bull flag — shallow drift down
+  for (let i = 0; i < 12; i++) {
     const open = mcap;
-    mcap = ath * (1 + i * 0.002);
-    pushCandle(candles, start + t++ * 60, open, mcap, 2_400);
+    mcap = 33_800 - i * 95 + Math.sin(i / 2) * 180;
+    pushCandle(candles, start + t++ * 60, open, mcap, 900);
   }
 
+  // Breakout leg — steady, not vertical
   for (let i = 0; i < 14; i++) {
     const open = mcap;
-    mcap = Math.max(22_000, mcap - ((ath - 22_000) / 14) * 0.7);
-    pushCandle(candles, start + t++ * 60, open, mcap, 2_600);
+    mcap += (peak - 32_500) / 14 * (0.75 + (i % 2) * 0.12);
+    pushCandle(candles, start + t++ * 60, open, mcap, 2_400 + i * 80);
+  }
+
+  // Top wick cluster
+  for (let i = 0; i < 3; i++) {
+    const open = mcap;
+    mcap = peak * (1 + i * 0.0015);
+    pushCandle(candles, start + t++ * 60, open, mcap, 1_800);
+  }
+
+  // Hidden replay candles (not shown in hero)
+  for (let i = 0; i < 10; i++) {
+    const open = mcap;
+    mcap = Math.max(31_000, mcap - 680);
+    pushCandle(candles, start + t++ * 60, open, mcap, 2_100);
   }
 
   return candles;
