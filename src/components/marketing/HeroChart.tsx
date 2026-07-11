@@ -6,12 +6,31 @@ import {
   ColorType,
   createChart,
   CrosshairMode,
+  type AutoscaleInfoProvider,
   type IChartApi,
   type ISeriesApi,
   type UTCTimestamp,
 } from "lightweight-charts";
 import { formatMarketCap } from "@/lib/chart-format";
 import { getHeroChartSlices } from "@/lib/hero-demo-candles";
+
+const heroAutoscale: AutoscaleInfoProvider = (original) => {
+  const base = original();
+  if (!base) {
+    return base;
+  }
+
+  const { minValue, maxValue } = base.priceRange;
+  const range = maxValue - minValue;
+  const pad = Math.max(range * 0.22, 5_000);
+
+  return {
+    priceRange: {
+      minValue: minValue - pad,
+      maxValue: maxValue + pad,
+    },
+  };
+};
 
 const toSeriesData = (candles: ReturnType<typeof getHeroChartSlices>["visible"]) =>
   candles.map((c) => ({
@@ -78,23 +97,7 @@ const HeroChart = () => {
       borderVisible: false,
       wickUpColor: "#14f195",
       wickDownColor: "#ff4d6d",
-      autoscaleInfoProvider: (original) => {
-        const base = original();
-        if (!base) {
-          return base;
-        }
-
-        const { minValue, maxValue } = base.priceRange;
-        const range = maxValue - minValue;
-        const pad = Math.max(range * 0.22, 5_000);
-
-        return {
-          priceRange: {
-            minValue: minValue - pad,
-            maxValue: maxValue + pad,
-          },
-        };
-      },
+      autoscaleInfoProvider: heroAutoscale,
     });
 
     chartRef.current = chart;
