@@ -16,7 +16,7 @@ import { getHeroChartSlices } from "@/lib/hero-demo-candles";
 
 const heroAutoscale: AutoscaleInfoProvider = (original) => {
   const base = original();
-  if (!base) {
+  if (!base?.priceRange) {
     return base;
   }
 
