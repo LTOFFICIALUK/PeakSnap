@@ -6,6 +6,7 @@ import {
   parseCandles,
   todayDeckKey,
 } from "./deck-service";
+import { canBuildLiveDeck } from "./env";
 import { splitCandlesAtFreeze } from "./reversal";
 
 export type DeckCardPayload = {
@@ -119,7 +120,9 @@ export const getDeckPayloadWithEnsure = async (sessionId = ""): Promise<DeckPayl
 
     return emptyPayload(
       "empty",
-      "No reversal drills from today's launches yet. APIs may be quiet — retry in a minute.",
+      canBuildLiveDeck()
+        ? "No reversal drills from today's launches yet. APIs may be quiet — retry in a minute."
+        : "Today's deck hasn't been built yet. Run `npm run deck:live` on your PC.",
     );
   } catch (error) {
     return emptyPayload(

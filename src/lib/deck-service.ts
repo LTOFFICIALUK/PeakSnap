@@ -1,4 +1,5 @@
 import { prisma } from "./db";
+import { canBuildLiveDeck } from "./env";
 import { detectScenario, type Candle } from "./reversal";
 import {
   fetchLaunchCandles,
@@ -32,12 +33,21 @@ export const ensureTodayDeck = async (): Promise<DeckEnsureResult> => {
   ensureInFlight = (async () => {
     try {
       const existing = await getDeckForToday();
+      const existingCount = existing?.cards.length ?? 0;
 
-      if (existing && existing.cards.length >= TARGET_DECK_SIZE) {
+      if (existing && existingCount >= TARGET_DECK_SIZE) {
         return {
           ok: true,
-          cardCount: existing.cards.length,
+          cardCount: existingCount,
           reason: "ready",
+        };
+      }
+
+      if (!canBuildLiveDeck()) {
+        return {
+          ok: existingCount >= MIN_DECK_CARDS,
+          cardCount: existingCount,
+          reason: existingCount >= MIN_DECK_CARDS ? "ready" : "no_launches",
         };
       }
 
