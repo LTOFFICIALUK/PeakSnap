@@ -36,14 +36,23 @@ In **Vercel → PeakSnap → Settings → Environment Variables**:
 | `ADMIN_SECRET` | `openssl rand -hex 32` |
 | `BIRDEYE_API_KEY` | *(optional)* |
 
-Vercel runs `prisma migrate deploy` on each deploy (see `vercel.json`).
+Vercel runs `prisma generate && next build` only — **no migrate on deploy** (Neon is unreachable/flaky during Vercel builds).
+
+**Run migrations once from your PC** before the first deploy (and after any schema change):
+
+```bash
+npx prisma migrate deploy
+```
+
+Use your Neon **direct** URL in `DIRECT_URL` locally for this command.
 
 ### 3. Local PC `.env` (same DB)
 
 Use the **same** `DATABASE_URL`, `DIRECT_URL`, and `ADMIN_SECRET` as Vercel.
 
 ```bash
-npm run deck:live
+npx prisma migrate deploy   # once — creates tables in Neon
+npm run deck:live           # builds today's deck
 ```
 
 This pulls today's pump.fun launches and writes cards into Neon. Vercel users read from that DB.
