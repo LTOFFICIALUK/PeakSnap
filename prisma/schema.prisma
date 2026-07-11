@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Deck {
+  id        String   @id @default(cuid())
+  deckDate  String   @unique
+  createdAt DateTime @default(now())
+  cards     Card[]
+}
+
+model Card {
+  id              String   @id @default(cuid())
+  deckId          String
+  deck            Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  sortOrder       Int
+  tokenMint       String
+  tokenSymbol     String
+  tokenName       String?
+  tokenImage      String?
+  poolAddress     String?
+  freezeTimestamp Int
+  patternTag      String
+  peakGainPct     Float
+  dropAfterPct    Float
+  gainAfterPct    Float    @default(0)
+  correctChoice   String   @default("EXIT")
+  candlesJson     String
+  createdAt       DateTime @default(now())
+  guesses         Guess[]
+
+  @@index([deckId, sortOrder])
+}
+
+model Guess {
+  id        String   @id @default(cuid())
+  cardId    String
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  sessionId String
+  choice    String
+  correct   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([cardId, sessionId])
+}
