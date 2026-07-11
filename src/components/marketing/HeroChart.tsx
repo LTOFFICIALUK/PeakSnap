@@ -51,7 +51,7 @@ const HeroChart = () => {
       },
       rightPriceScale: {
         borderColor: "rgba(255,255,255,0.08)",
-        scaleMargins: { top: 0.12, bottom: 0.08 },
+        scaleMargins: { top: 0.18, bottom: 0.14 },
       },
       localization: {
         priceFormatter: formatMarketCap,
@@ -60,9 +60,8 @@ const HeroChart = () => {
         borderColor: "rgba(255,255,255,0.08)",
         timeVisible: true,
         secondsVisible: false,
-        fixLeftEdge: true,
-        fixRightEdge: true,
-        rightOffset: 6,
+        barSpacing: 4,
+        rightOffset: 12,
       },
       crosshair: {
         mode: CrosshairMode.Hidden,
@@ -79,6 +78,23 @@ const HeroChart = () => {
       borderVisible: false,
       wickUpColor: "#14f195",
       wickDownColor: "#ff4d6d",
+      autoscaleInfoProvider: (original) => {
+        const base = original();
+        if (!base) {
+          return base;
+        }
+
+        const { minValue, maxValue } = base.priceRange;
+        const range = maxValue - minValue;
+        const pad = Math.max(range * 0.22, 5_000);
+
+        return {
+          priceRange: {
+            minValue: minValue - pad,
+            maxValue: maxValue + pad,
+          },
+        };
+      },
     });
 
     chartRef.current = chart;
@@ -109,7 +125,9 @@ const HeroChart = () => {
     }
 
     seriesRef.current.setData(toSeriesData(visible));
-    chartRef.current?.timeScale().fitContent();
+    const timeScale = chartRef.current?.timeScale();
+    timeScale?.fitContent();
+    timeScale?.applyOptions({ barSpacing: 4, rightOffset: 12 });
 
     if (freezeLineRef.current) {
       seriesRef.current.removePriceLine(freezeLineRef.current);
